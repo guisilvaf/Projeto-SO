@@ -2,54 +2,79 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h> 
-
-#define RED_LOOP 6
-#define GREEN_LOOP 3
+#include <stdlib.h>
 
 static int counter = 0;
 
-static void * primeira_thread_function(void* arg);
-static void * segunda_thread_function(void* arg);
+sem_t semaforo;
 
-sem_t sem1;
+void* processando(void* arg)
+{
+        int *idThread;
+        idThread = arg;
 
-int main(void)
+        printf("\nThread %i está processando...\n", *idThread);
+        int timeSleep = rand() % 10;
+        //printf("Tempo da thread %i a dormir: %d segundos\n", timeSleep, *idThread);
+        sleep(timeSleep);
+}
+
+void* regiaoNcritica(void* arg)
+{
+        int *idThread;
+        idThread = arg;
+        printf("\nThread %i não está na região crítica...\n", *idThread);
+        processando(arg);
+}
+
+
+
+void* regiaoCritica(void* arg)
+{
+        int *idThread;
+        idThread = arg;
+        printf("\nThread %i está entrando na região crítica...\n", *idThread);
+        processando(arg);
+        printf("\nThread %i está saindo da região crítica...\n", *idThread);
+}
+
+
+void* roda(void* arg)
+{       
+        regiaoNcritica(arg);
+
+        sem_wait(&semaforo);
+
+        regiaoCritica(arg);
+
+        sem_post(&semaforo);
+}
+
+
+int main()
 {
 
-	pthread_t thread_1, thread_2;
+        int numeroPermissoes = 0;
+        int numeroProcessos = 6;
+        
+        sem_init(&semaforo, 0 , 1);
+        
+        pthread_t thread_semaforo[numeroProcessos];
+        int arg[numeroProcessos];
 
-	sem_init(&sem1, 0 , 1);
+        for(int i = 0; i < numeroProcessos; i++)
+        {
+                arg[i] = i + 1;
+                pthread_create(&thread_semaforo[i], NULL, roda, (void *)&arg[i]);
+        }
 
-	pthread_create(&thread_1, NULL, *primeira_thread_function, NULL);
-	pthread_create(&thread_2, NULL, *segunda_thread_function, NULL);
+        for(int k = 0; k < numeroProcessos; k++)
+        {
+                pthread_join(thread_semaforo[k], NULL);
+        }
 
-        pthread_join(thread_1, NULL);
-        pthread_join(thread_2, NULL);
 
-        //printf("O valor contador %d \n", counter);
+        printf("\n");
+        
         return 0;
-
-}
-
-static void * primeira_thread_function(void* arg)
-{
-        for(int i = 0; i < RED_LOOP; i++)
-        {
-		
-		sem_wait(&sem1);
-                printf("Status do semáforo: Vermelho\n");
-                sleep(2);
-		sem_post(&sem1);
-        }
-}
-
-static void * segunda_thread_function(void* arg)
-{
-        for(int i = 0; i < GREEN_LOOP; i++)
-        {
-		sem_wait(&sem1);
-                printf("Status do semáforo: Verde\n");
-                sleep(2);
-                sem_post(&sem1);
-        }
 }
