@@ -15,7 +15,7 @@ void* processando(void* arg)
 
         printf("\nThread %i está processando...\n", *idThread);
         int timeSleep = rand() % 10;
-        //printf("Tempo da thread %i a dormir: %d segundos\n", timeSleep, *idThread);
+        printf("\nTempo da thread %i a dormir: %d segundos\n", timeSleep, *idThread);
         sleep(timeSleep);
 }
 
@@ -40,8 +40,14 @@ void* regiaoCritica(void* arg)
 
 
 void* roda(void* arg)
-{       
-        regiaoNcritica(arg);
+{     
+       	int *idThread;
+     	idThread = arg;	
+       
+       	regiaoNcritica(arg);
+
+
+	printf("\nthread %i está esperando para entrar na região crítica.\n", *idThread);
 
         sem_wait(&semaforo);
 
@@ -54,8 +60,8 @@ void* roda(void* arg)
 int main()
 {
 
-        int numeroPermissoes = 0;
-        int numeroProcessos = 6;
+        int numeroPermissoes = 5;
+        int numeroProcessos = 10;
         
         sem_init(&semaforo, 0 , 1);
         
