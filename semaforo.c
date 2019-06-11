@@ -7,6 +7,7 @@
 static int counter = 0;
 
 sem_t semaforo;
+<<<<<<< HEAD
 
 void* processando(void* arg)
 {
@@ -19,6 +20,20 @@ void* processando(void* arg)
         sleep(timeSleep);
 }
 
+=======
+
+void* processando(void* arg)
+{
+        int *idThread;
+        idThread = arg;
+
+        printf("\nThread %i está processando...\n", *idThread);
+        int timeSleep = rand() % 10;
+        //printf("Tempo da thread %i a dormir: %d segundos\n", timeSleep, *idThread);
+        sleep(timeSleep);
+}
+
+>>>>>>> f3d14ae2c7edb3d768afe43f0815f602ea6c0789
 void* regiaoNcritica(void* arg)
 {
         int *idThread;
@@ -40,6 +55,7 @@ void* regiaoCritica(void* arg)
 
 
 void* roda(void* arg)
+<<<<<<< HEAD
 {     
        	int *idThread;
      	idThread = arg;	
@@ -53,6 +69,15 @@ void* roda(void* arg)
 
         regiaoCritica(arg);
 
+=======
+{       
+        regiaoNcritica(arg);
+
+        sem_wait(&semaforo);
+
+        regiaoCritica(arg);
+
+>>>>>>> f3d14ae2c7edb3d768afe43f0815f602ea6c0789
         sem_post(&semaforo);
 }
 
@@ -60,8 +85,13 @@ void* roda(void* arg)
 int main()
 {
 
+<<<<<<< HEAD
         int numeroPermissoes = 5;
         int numeroProcessos = 10;
+=======
+        int numeroPermissoes = 0;
+        int numeroProcessos = 6;
+>>>>>>> f3d14ae2c7edb3d768afe43f0815f602ea6c0789
         
         sem_init(&semaforo, 0 , 1);
         
